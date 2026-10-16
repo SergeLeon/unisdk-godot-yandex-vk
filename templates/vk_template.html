@@ -144,17 +144,24 @@
 
             _finishInit: function (callback) {
                 var self = this;
-                self._safeSend('VKWebAppGetLaunchParams', {}, 3000, {}, true).then(function (lp) {
+                // launch params приходят асинхронно (VKWebAppGetLaunchParams).
+                // device и environment считаются ПО НИМ, поэтому отвечаем GDScript
+                // только когда они получены: иначе vk_platform пустой, и мобильное
+                // приложение определяется как десктоп (isDesktop=true).
+                var pendingInfo = [];
+                pendingInfo.push(self._safeSend('VKWebAppGetLaunchParams', {}, 3000, {}, true).then(function (lp) {
                     self.launchParams = lp || {};
-                });
-                self._safeSend('VKWebAppGetUserInfo', {}, 3000, {}, true).then(function (u) {
+                }));
+                pendingInfo.push(self._safeSend('VKWebAppGetUserInfo', {}, 3000, {}, true).then(function (u) {
                     self.userInfo = u || {};
                     if (u && u.id) lsSet('__userinfo', u);
-                });
+                }));
                 self._subscribeEvents();
                 self._installBannerResizeHandler();
                 self.isInitialized = true;
-                callback(JSON.stringify({ success: true, data: { environment: self.getEnvironment(), device: self.getDeviceInfo() } }));
+                Promise.all(pendingInfo).then(function () {
+                    callback(JSON.stringify({ success: true, data: { environment: self.getEnvironment(), device: self.getDeviceInfo() } }));
+                });
             },
 
             _subscribeEvents: function () {
@@ -190,11 +197,26 @@
 
             getDeviceInfo: function () {
                 var lp = this.launchParams || {};
-                var platform = lp.vk_platform || 'web';
+                var platform = lp.vk_platform || '';
+                // Платформа не пришла в launch params — определяем по userAgent,
+                // иначе мобильный клиент посчитался бы десктопом.
+                if (!platform) {
+                    var ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
+                    if (/iPad|Tablet/i.test(ua)) platform = 'mobile_ipad';
+                    else if (/Android|iPhone|iPod|Mobile/i.test(ua)) platform = 'mobile_web';
+                    else platform = 'desktop_web';
+                }
+                // vk_platform: mobile_iphone / mobile_android / mobile_ipad / mobile_web —
+                // приложение и мобильный браузер; web / desktop_web — десктоп.
+                // Варианты с суффиксом _ok приходят из Одноклассников.
+                var isMobile = platform === 'mobile_web' || platform === 'mobile_android' ||
+                    platform === 'mobile_iphone' || platform === 'mobile_web_ok' ||
+                    platform === 'mobile_android_ok';
+                var isTablet = platform === 'mobile_ipad' || platform === 'mobile_iphone_ok';
                 return {
-                    type: platform === 'mobile_web' || platform === 'mobile_web_ok' ? 'mobile' : (platform === 'mobile_ipad' || platform === 'mobile_iphone_ok' ? 'tablet' : 'desktop'),
-                    isMobile: platform === 'mobile_web' || platform === 'mobile_web_ok' || platform === 'mobile_android_ok',
-                    isTablet: platform === 'mobile_ipad' || platform === 'mobile_iphone_ok',
+                    type: isMobile ? 'mobile' : (isTablet ? 'tablet' : 'desktop'),
+                    isMobile: isMobile,
+                    isTablet: isTablet,
                     isDesktop: platform === 'web' || platform === 'desktop_web' || platform === 'desktop_web_ok',
                     isTV: false
                 };
