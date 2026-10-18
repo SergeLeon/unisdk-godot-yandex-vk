@@ -20,13 +20,17 @@
 <details>
 <summary><b>По каким запросам находится этот репозиторий / Search terms</b></summary>
 
-`sdk для яндекса godot` · `яндекс игры sdk godot 4` · `яндекс игры плагин godot` · `yandex games sdk godot 4` ·
-`yandex games godot plugin` · `yagames sdk gdscript` · `yandex player data godot` · `яндекс реклама rewarded godot` ·
-`sdk для вк игр godot` · `вк игры sdk` · `vkontakte games sdk godot` · `vk bridge godot 4` · `vk bridge gdscript` ·
+`sdk для яндекса` · `sdk для яндекса godot` · `sdk для вк` · `sdk для вк игр` · `яндекс игры sdk` · `яндекс игры godot 4` ·
+`яндекс игры плагин godot` · `вк игры sdk` · `вк игры godot` · `yandex games sdk godot 4` · `yandex games godot plugin` ·
+`yagames sdk gdscript` · `yandex player data godot` · `яндекс реклама rewarded godot` ·
+`vkontakte games sdk godot` · `vk bridge godot 4` · `vk bridge gdscript` ·
 `vk storage godot` · `vk web app godot` · `одноклассники sdk godot` · `ok.ru games godot` ·
 `godot web export html5` · `godot web export preset` · `godot rewarded video` · `godot interstitial ad` ·
 `godot cloud saves` · `godot leaderboard` · `godot in-app purchases web` · `godot html5 mobile game` ·
 `универсальный sdk для игровых платформ godot` · `unified sdk godot web platforms`
+
+Синонимы и торговые названия: **Яндекс.Игры**, **Yandex Games**, **YaGames**, **Yandex Player**, **Yandex SDK**,
+**ВК Игры**, **VK Games**, **VK Play**, **VK Bridge**, **VK Storage**, **Одноклассники**, **OK.ru**, **OK Games**.
 
 </details>
 
