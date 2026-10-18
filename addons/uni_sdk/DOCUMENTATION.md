@@ -1,7 +1,7 @@
 # UniSDK — полная документация
 
 > Справочник по модулям, настройкам проекта, различиям платформ и внутреннему устройству JS-мостов.
-> Актуально для версии **1.3.0**. Краткий обзор и установка — в [README.md](README.md).
+> Актуально для версии **1.3.1**. Краткий обзор и установка — в [README.md](README.md).
 
 ---
 
@@ -63,7 +63,7 @@
 - **Защита от rate limit**: троттлинг лидербордов (1 запрос/сек), player data чтения (15 сек), VK Storage (1000 вызовов/час).
 - **Патч Emscripten-вывода**: убирает ложную проверку Safari версии, из-за которой игра не запускалась в Android WebView (в том числе внутри VK).
 - **Cache-busting для index.js**: автоматическая подстановка `?v=<timestamp>` в HTML — обход агрессивного кэша WebView.
-- **Защита звука и паузы**: автопауза и мьют `AudioServer` во время рекламы.
+- **Защита звука и паузы**: мьют `AudioServer` во время рекламы (включён по умолчанию); автопауза дерева (`auto_pause_tree`) — опция, срабатывает и на рекламу, и на платформенную паузу (сворачивание вкладки).
 - **Атомарная запись JSON**: mock и backup не повреждаются при падении.
 - **Единый логгер** с уровнями DEBUG/INFO/WARN/ERROR.
 
@@ -180,7 +180,7 @@ addons/uni_sdk/
 | `uni_sdk/general/auto_init` | `bool` | `true` | Автоинициализация SDK при старте |
 | `uni_sdk/general/auto_call_game_ready` | `bool` | `true` | Автоматический `game_ready()` |
 | `uni_sdk/general/auto_apply_locale` | `bool` | `true` | Автоматическая установка локали |
-| `uni_sdk/general/auto_pause_tree` | `bool` | `false` | `get_tree().paused = true` при рекламе |
+| `uni_sdk/general/auto_pause_tree` | `bool` | `false` | `get_tree().paused = true` при рекламе и при платформенной паузе (сворачивание вкладки) |
 | `uni_sdk/general/debug_log` | `bool` | `false` | Зарегистрирован в настройках, но `UniLogger` его пока не читает: уровень зависит от типа сборки (DEBUG в debug, WARN в release) |
 | `uni_sdk/ads/auto_mute_audio` | `bool` | `true` | Глушить master-шину при рекламе |
 | `uni_sdk/ads/interstitial_cooldown` | `float` | `60.0` | Кулдаун между межстраничными (сек) |
@@ -242,8 +242,12 @@ addons/uni_sdk/
 
 | Пункт | Действие |
 |---|---|
+| **UniSDK: Configure Platforms...** | Диалог настройки платформ (§7) |
 | **UniSDK: Create Selected Presets** | Создаёт/обновляет пресеты |
-| **UniSDK: Export Selected Builds** | Экспорт + патч + hosting config + ZIP |
+| **UniSDK: Export Selected Builds** | Экспорт + патч Emscripten + cache-busting + hosting config + ZIP |
+| **UniSDK: Reset Mock Data** | Удаляет `user://unisdk_mock_data.json` |
+| **UniSDK: Reset Player Backup** | Удаляет `user://unisdk_player_backup.json` |
+| **UniSDK: Open Documentation** | Открывает ссылку на документацию в браузере |
 
 ### Что делает плагин при экспорте
 
@@ -423,7 +427,7 @@ TranslationServer.set_locale(lang)
 
 ## 14. Platform capabilities
 
-**Каждый модуль UniSDK имеет методы для проверки доступности своих функций.** Используйте их перед вызовом, чтобы UI корректно скрывал недоступные кнопки и не было ошибок на неподдерживаемых платформах.
+**Модули рекламы, покупок, лидербордов, отзывов, ярлыков и профиля игрока имеют методы для проверки доступности своих функций** (у `storage`, `device` и `environment` их нет — эти данные доступны всегда). Используйте их перед вызовом, чтобы UI корректно скрывал недоступные кнопки и не было ошибок на неподдерживаемых платформах.
 
 | Модуль | Метод | Что проверяет |
 |---|---|---|
@@ -473,7 +477,7 @@ review_button.visible = UniSDK.feedback.is_review_supported() \
     and (await UniSDK.feedback.can_review()).get("value", false)
 ```
 
-> ⚠️ Capability-методы безопасно вызывать до инициализации: пока формат в состоянии `unknown`, `is_*_supported()` возвращает `true` оптимистично, чтобы UI не мигал. После `UniSDK.ensure_initialized()` результат становится точным.
+> ⚠️ Capability-методы безопасно вызывать до инициализации: пока `is_initialized == false`, `is_*_supported()` возвращает `true` оптимистично, чтобы UI не мигал. Исключения — `payments.is_catalog_supported()` и `leaderboards.is_full_leaderboard_available()`: они отвечают по платформе и на VK дают `false` сразу. После `UniSDK.ensure_initialized()` результат точный.
 
 ---
 
@@ -497,7 +501,7 @@ UniSDK.dispatch_exit()
 # Capability check
 if UniSDK.ads.can_show_rewarded():
     var res: Dictionary = await UniSDK.show_rewarded()
-    # { success, rewarded, was_shown, error, reason }
+    # { success, rewarded, was_shown, error, reason, duration }
     # reason: shown | not_filled | unsupported | timeout | error
     if res.rewarded:
         give_reward()
@@ -506,7 +510,8 @@ if UniSDK.ads.can_show_rewarded():
 if UniSDK.ads.can_show_interstitial():
     await UniSDK.show_interstitial()
 
-# Точная проверка «есть ли что показывать» прямо сейчас
+# Точная проверка «есть ли что показывать» прямо сейчас (VKWebAppCheckNativeAds).
+# Точная только на VK: на Яндекс.Играх адаптер всегда отвечает «доступно».
 if await UniSDK.ads.is_ad_available("rewarded"):
     await UniSDK.show_rewarded()
 
@@ -520,7 +525,7 @@ if UniSDK.ads.can_show_banner():
     var status = await UniSDK.ads.get_banner_status()
 ```
 
-> ⏱ Показ ограничен по времени: 55 с для rewarded, 30 с для interstitial, 2.5 с на проверку `is_ad_available()` — управление всегда возвращается игре. Лимиты выставлены с запасом к таймаутам JS-моста (45 / 20 с): внешний слой обязан ждать дольше внутреннего, иначе игра сдаётся раньше, чем VK закроет ролик, и награда теряется. При `res.rewarded == false` показ не состоялся (нет фила, таймаут или отказ платформы) — сообщите об этом игроку.
+> ⏱ Показ ограничен по времени: 55 с для rewarded, 30 с для interstitial, 2.5 с на проверку `is_ad_available()` — управление всегда возвращается игре. Лимиты выставлены с запасом к таймаутам JS-моста (45 / 20 с): внешний слой обязан ждать дольше внутреннего, иначе игра сдаётся раньше, чем VK закроет ролик, и награда теряется. При `res.rewarded == false` показ не состоялся (нет фила, таймаут или отказ платформы) — сообщите об этом игроку. Поле `reason` есть у rewarded; у interstitial в ветке «формат не поддерживается» возвращается только `{ success, was_shown, error }`.
 
 ### Профиль игрока
 
@@ -549,7 +554,8 @@ var updated = await UniSDK.player.increment_stats({ "kills": 10 })
 var read: Dictionary = await UniSDK.player.get_data_ex(["coins", "level"])
 # { ok, data, from_cache }: ok = false — облако недоступно (это не «сохранения нет»)
 var write: Dictionary = await UniSDK.player.set_data_ex({ "coins": 550 }, true)
-# { ok, success, cloud_ok, failed, deferred }: cloud_ok = false — запись осталась в локальном бэкапе
+# { ok, success, cloud_ok }: cloud_ok = false — запись осталась в локальном бэкапе
+# на VK в ответе ещё failed (сколько ключей не ушло) и deferred (запись отложена)
 UniSDK.player.set_data_now({ "coins": 550 })   # синхронно, при сворачивании приложения
 ```
 
@@ -619,7 +625,7 @@ if UniSDK.shortcut.is_shortcut_supported():
 var device_type: String = UniSDK.device.get_type()
 var is_mob: bool = UniSDK.device.is_mobile()
 var is_desk: bool = UniSDK.device.is_desktop()
-var orientation: String = UniSDK.device.get_orientation()
+var orientation: String = await UniSDK.device.get_orientation()
 
 var lang: String = UniSDK.environment.get_lang()
 var browser_lang: String = UniSDK.environment.get_browser_lang()
@@ -640,12 +646,12 @@ var app_id: String = UniSDK.environment.get_app_id()
 | **Сохранения** | ✅ | ✅ | ✅ | ✅ |
 | **Interstitial** | ✅ | ✅ | ⚠️ по ответу VK | ❌ |
 | **Rewarded** | ✅ | ✅ | ⚠️ по ответу VK | ❌ |
-| **Banner** | ✅ | ✅ (bottom) | ✅ (bottom/top) | ❌ |
-| **Покупки** | ✅ | ✅ | ❌ | ❌ |
+| **Banner** | ✅ | ✅ (портрет — снизу, ландшафт — справа) | ✅ (портрет — снизу, ландшафт — справа) | ❌ |
+| **Покупки** | ✅ | ✅ | ❌ | ✅ (в мобильном приложении) |
 | **Каталог** | ✅ | ❌ | ❌ | ❌ |
 | **Лидерборды** | ✅ | Только запись | Только запись | Только запись |
 | **Отзывы** | ✅ | ❌ | ❌ | ❌ |
-| **Ярлыки** | ✅ | ✅ (mobile) | ❌ | ❌ |
+| **Ярлыки** | ✅ | ✅ (mobile) | ❌ | ✅ (в мобильном приложении) |
 | **Back-кнопка** | `HISTORY_BACK` | `VKWebAppChangeFragment` | ✅ | ✅ |
 | **Язык** | `environment.i18n.lang` | `vk_language` | `vk_language` | `vk_language` |
 
@@ -653,8 +659,8 @@ var app_id: String = UniSDK.environment.get_app_id()
 
 1. **Отзывы**: используйте `UniSDK.feedback.is_review_supported()` — скроет кнопку на VK/OK автоматически.
 2. **Лидерборды**: проверяйте `is_full_leaderboard_available()` — на VK показывайте только запись игрока.
-3. **Покупки**: `can_purchase()` вернёт `false` на десктопе VK/OK — кнопка автоматически скроется.
-4. **Rewarded**: `can_show_rewarded()` вернёт `false` только в OK и после того, как VK трижды ответил «не поддерживается». На десктопе VK кнопку **не скрывай заранее** — попробуй показать и, если `res.rewarded == false`, сообщи игроку о неудаче (и при необходимости убери/заблокируй кнопку).
+3. **Покупки**: `can_purchase()` вернёт `false` на десктопе VK и OK; на мобильном OK покупки идут через тот же VK Bridge и считаются доступными.
+4. **Rewarded**: `can_show_rewarded()` вернёт `false` в OK, а на VK — только когда погашены **оба** формата (по 3 явных отказа на каждый, включая interstitial). На десктопе VK кнопку **не скрывай заранее** — попробуй показать и, если `res.rewarded == false`, сообщи игроку о неудаче (и при необходимости убери/заблокируй кнопку).
 5. **Баннеры**: `can_show_banner()` вернёт `false` в OK. Позиция автоматическая.
 
 ---
@@ -782,7 +788,7 @@ var res: Dictionary = await UniSDK.call_js_async("methodName", [arg1, arg2], tim
 
 1. **Защита от GC**: `JavaScriptObject` сохраняется в `_active_js_callbacks`.
 2. **Очередь отложенных событий**: повторные вызовы колбэка → `_ad_event_queue`.
-3. **Таймаут**: по истечении — возврат `{ success: false, error: "Timeout" }`.
+3. **Таймаут**: по истечении — возврат `{ success: false, error: "Timeout: <метод>" }`.
 4. **Поколения**: `_release_ad_callbacks_deferred` использует счётчик поколений.
 
 ### Diff-логика записи
@@ -867,17 +873,17 @@ Emscripten в сгенерированном `index.js` парсит `userAgent`
 Uncaught (in promise) Error: This emscripten-generated code requires Safari v15.2.0 (detected v040000)
 ```
 
-Игра не запускается. **Решение:** `UniSDKExportPlugin._patch_export_artifacts()` заменяет условия на `if(false)` после каждого экспорта.
+Игра не запускается. **Решение:** `UniSDKExportPlugin._patch_emscripten_browser_checks()` заменяет условия на `false` после каждого экспорта.
 
 ### Проблема 2: WebView кэширует старый `index.js`
 
-При обновлении сборки браузер продолжает использовать старый `index.js`, поэтому патч не применяется. **Решение:** плагин добавляет `?v=<timestamp>` к тегу `<script src=index.js>` в `index.html`.
+При обновлении сборки браузер продолжает использовать старый `index.js`, поэтому патч не применяется. **Решение:** `UniSDKExportPlugin._add_cache_busting()` добавляет `?v=<timestamp>` к подключению `index.js` в `index.html`. Прежний `?v=...` при повторном экспорте заменяется, параметры не плодятся.
 
 ### Проверка после экспорта
 
 В консоли должно быть:
 ```
-[UniSDK] Patched Emscripten browser checks in index.js
+[UniSDK] Patched Emscripten browser checks in <путь к сборке>/index.js
 [UniSDK] Added cache-busting to index.js in index.html
 ```
 
@@ -905,10 +911,10 @@ VK Dev Console → ваше приложение → **Manage → Cache** → **
 В редакторе Godot (F5) SDK работает offline:
 
 - **Платформа**: `PlatformDetector` вернёт `MOCK`.
-- **Адаптер**: `YandexMockBridge`.
+- **Адаптер**: тот же `YandexAdapter`, но вместо JS-моста подставляется `YandexMockBridge`.
 - **Хранение**: `user://unisdk_mock_data.json` (атомарная запись).
 - **Задержки**: эмуляция рекламы (0.5–0.8 сек).
-- **Все capability-методы**: возвращают `true`.
+- **Capability-методы**: до первого действия возвращают `true`; дальше отражают реальное состояние (после `request_review()` отзыв больше не «доступен», в течение кулдауна `can_show_interstitial()` вернёт `false`).
 
 ### Сброс данных
 
@@ -942,7 +948,7 @@ YandexGames.        →  UniSDK.
 ## 23. Известные ограничения
 
 1. **VK не имеет каталога товаров** — `payments.get_catalog()` пуст.
-2. **VK не имеет API отзывов** — `feedback.can_review()` возвращает `false`.
+2. **VK не имеет API отзывов** — `feedback.can_review()` возвращает `{ "value": false, "reason": "NOT_SUPPORTED" }`.
 3. **VK лидерборды** — только запись игрока, полный топ недоступен.
 4. **VK покупки только в мобильном приложении** — на десктопе `VKWebAppShowOrderBox` вернёт ошибку.
 5. **VK реклама (interstitial/rewarded) в веб-версии чаще всего не отдаётся** — но SDK не отсекает её заранее по платформе: показ пробуется, а формат гасится только после 3 явных отказов VK («not supported»).
@@ -1003,7 +1009,7 @@ YandexGames.        →  UniSDK.
 
 **Причина:** `viewport-fit=cover` в `<meta name="viewport">` или использование `100dvh`/`100dvw` в CSS.
 
-**Решение:** используй обновлённые шаблоны из `addons/uni_sdk/templates/`, где `<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">` (без `viewport-fit`).
+**Решение:** в `vk_template.html` мета-тег уже без `viewport-fit`, а в `yandex_template.html` он пока стоит (`viewport-fit=cover`). Если сборка обрезана — убери `viewport-fit=cover` из `templates/yandex_template.html` и пересобери.
 
 ### Игра повёрнута/искажена в ландшафте
 
@@ -1068,11 +1074,22 @@ if UniSDK.feedback.is_review_supported():
 10. **Никогда** не проверяй `is_authorized()` при выборе хранилища.
 11. **Никогда** не полагайся на порядок событий рекламы.
 12. **Никогда** не крути `Camera2D` для ландшафта — крути корневой `Node2D` мира.
-13. **Не скрывай** кнопку rewarded заранее на десктопе VK: `can_show_rewarded()` вернёт `false` только в OK и после явных отказов платформы.
+13. **Не скрывай** кнопку rewarded заранее на десктопе VK: `can_show_rewarded()` вернёт `false` в OK, а на VK — только когда погашены оба формата (по 3 явных отказа).
 
 ---
 
 ## 26. Changelog
+
+### v1.3.1
+
+**Исправлено:**
+- `is_ad_available("rewarded")` на VK проверял interstitial: адаптер не переводил имя формата в `reward`, который понимает JS-мост.
+- Настройки `uni_sdk/ads/interstitial_timeout`, `rewarded_timeout`, `check_timeout`, `telemetry_events`, `telemetry_path` теперь видны в **Project Settings → UniSDK** (раньше читались только как скрытые дефолты).
+- Возвращён cache-busting `index.js?v=<timestamp>` при экспорте (потерян при переработке export-плагина в v1.3.0) — правки сборки больше не залипают в кэше WebView.
+
+**Документация:**
+- Справочник сверен с кодом: имена функций патча, лог-строки, матрица платформ (покупки и ярлыки в мобильном OK, позиции баннера), `viewport-fit` в шаблонах, асинхронный `device.get_orientation()`.
+- Полный справочник переехал в `addons/uni_sdk/DOCUMENTATION.md`, README сокращён до обзора и установки.
 
 ### v1.3.0
 
@@ -1121,7 +1138,7 @@ if UniSDK.feedback.is_review_supported():
 
 **Улучшения:**
 - Обновлён VK Bridge до 2.15.1.
-- Убран `viewport-fit=cover` из шаблонов (устранил обрезку/приближение в WebView).
+- Убран `viewport-fit=cover` из VK-шаблона; в Яндекс-шаблоне остаётся — см. §24.
 - Убраны `dvh`/`dvw` единицы (не поддерживаются старыми WebView).
 - Убран `print_rich` из продового кода.
 - Единый логгер `UniLogger`.

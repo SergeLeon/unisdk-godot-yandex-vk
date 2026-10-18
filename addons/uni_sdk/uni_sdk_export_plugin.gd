@@ -218,6 +218,19 @@ static func _export_single_platform(p: UniPlatformProfile, godot_path: String, p
 		printerr("[UniSDK] Failed to patch %s: %s" % [js_path, patch_res.get("error", "unknown")])
 
 	# ------------------------------------------------------------------
+	#  Cache-busting: WebView продолжает отдавать закэшированный index.js,
+	#  из-за чего патч выше не применяется. Добавляем версию в query-строку.
+	# ------------------------------------------------------------------
+	var cb_res := _add_cache_busting(index_path)
+	if cb_res.get("success", false):
+		if cb_res.get("patched", false):
+			print("[UniSDK] Added cache-busting to index.js in index.html")
+		else:
+			print("[UniSDK] No index.js script tag found in index.html (cache-busting skipped)")
+	else:
+		printerr("[UniSDK] Failed to add cache-busting: %s" % cb_res.get("error", "unknown"))
+
+	# ------------------------------------------------------------------
 
 	if p.create_hosting_config and not p.hosting_config_name.is_empty():
 		var hc_res := _create_hosting_config_file(abs_dir, p)
@@ -284,6 +297,50 @@ static func _patch_emscripten_browser_checks(index_js_path: String) -> Dictionar
 	var out := FileAccess.open(index_js_path, FileAccess.WRITE)
 	if out == null:
 		return { "success": false, "patched": false, "error": "Cannot write %s" % index_js_path }
+	out.store_string(content)
+	out.close()
+
+	return { "success": true, "patched": true, "error": "" }
+
+
+# ------------------------------------------------------------------
+#  Cache-busting index.js
+# ------------------------------------------------------------------
+
+## Добавляет версию к подключению index.js в index.html: `index.js?v=<timestamp>`.
+##
+## Проблема: WebView (в том числе внутри VK и Яндекс.Игр) продолжает отдавать
+## старый index.js из кэша, поэтому патч Emscripten не применяется, и игра
+## падает уже после обновления сборки. Query-строка меняет URL — кэш промахивается.
+## Повторный экспорт не плодит параметры: прежний `?v=...` заменяется новым.
+##
+## Возвращает: { success: bool, patched: bool, error: String }
+static func _add_cache_busting(index_html_path: String) -> Dictionary:
+	if not FileAccess.file_exists(index_html_path):
+		return { "success": false, "patched": false, "error": "index.html not found: %s" % index_html_path }
+
+	var file := FileAccess.open(index_html_path, FileAccess.READ)
+	if file == null:
+		return { "success": false, "patched": false, "error": "Cannot open %s" % index_html_path }
+	var content := file.get_as_text()
+	file.close()
+
+	var re := RegEx.new()
+	if re.compile("(src\\s*=\\s*[\"']?(?:\\./)?)index\\.js(?:\\?[^\"'\\s>]*)?") != OK:
+		return { "success": false, "patched": false, "error": "Cannot compile index.js regex" }
+
+	var version := "%d" % int(Time.get_unix_time_from_system())
+	var replaced: RegExMatch = re.search(content)
+	if replaced == null:
+		return { "success": true, "patched": false, "error": "" }
+
+	content = re.sub(content, "${1}index.js?v=%s" % version, true)
+	if content.find(replaced.get_string()) >= 0:
+		return { "success": false, "patched": false, "error": "Cache-busting replacement had no effect" }
+
+	var out := FileAccess.open(index_html_path, FileAccess.WRITE)
+	if out == null:
+		return { "success": false, "patched": false, "error": "Cannot write %s" % index_html_path }
 	out.store_string(content)
 	out.close()
 
