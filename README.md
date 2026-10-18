@@ -2,6 +2,7 @@
 
 <p align="center">
   <a href="https://store.godotengine.org/asset/sergeleon/unisdk/"><img alt="Godot Asset Store" src="https://img.shields.io/badge/Godot%20Asset%20Store-UniSDK-478cbf"></a>
+  <a href="https://sergeleon.github.io/unisdk-godot-yandex-vk/"><img alt="Website" src="https://img.shields.io/badge/website-landing%20page-478cbf"></a>
   <a href="https://godotengine.org"><img alt="Godot 4.3+" src="https://img.shields.io/badge/Godot-4.3%2B-478cbf"></a>
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-green"></a>
   <br>
