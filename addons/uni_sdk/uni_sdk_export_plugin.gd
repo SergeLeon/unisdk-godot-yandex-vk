@@ -330,13 +330,14 @@ static func _add_cache_busting(index_html_path: String) -> Dictionary:
 		return { "success": false, "patched": false, "error": "Cannot compile index.js regex" }
 
 	var version := "%d" % int(Time.get_unix_time_from_system())
-	var replaced: RegExMatch = re.search(content)
-	if replaced == null:
+	if re.search(content) == null:
 		return { "success": true, "patched": false, "error": "" }
 
-	content = re.sub(content, "${1}index.js?v=%s" % version, true)
-	if content.find(replaced.get_string()) >= 0:
-		return { "success": false, "patched": false, "error": "Cache-busting replacement had no effect" }
+	var updated := re.sub(content, "${1}index.js?v=%s" % version, true)
+	if updated == content:
+		# Тот же timestamp (повторный экспорт в пределах секунды) — уже проставлено.
+		return { "success": true, "patched": false, "error": "" }
+	content = updated
 
 	var out := FileAccess.open(index_html_path, FileAccess.WRITE)
 	if out == null:
