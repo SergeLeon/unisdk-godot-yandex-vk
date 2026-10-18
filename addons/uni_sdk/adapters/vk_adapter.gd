@@ -237,7 +237,9 @@ func get_banner_status() -> Dictionary:
 func check_ad_available(format: String) -> Dictionary:
 	if not is_web():
 		return { "success": true, "available": true }
-	var res: Dictionary = await call_js_async("checkNativeAds", [format], 6.0)
+	# JS-мост понимает только "reward"; любой другой формат трактует как interstitial.
+	var js_format: String = "reward" if format == "rewarded" else "interstitial"
+	var res: Dictionary = await call_js_async("checkNativeAds", [js_format], 6.0)
 	if not res.get("success", false):
 		return { "success": false, "available": false, "error": str(res.get("error", "")) }
 	return { "success": true, "available": bool(res.get("available", false)) }
