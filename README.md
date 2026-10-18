@@ -5,6 +5,13 @@
   Godot 4.3+ · GDScript 2.0 · Web-экспорт · Editor Mock Mode
 </p>
 
+> **English summary.** UniSDK is a Godot 4.3+ editor plugin that provides a single GDScript API
+> (`UniSDK.ads`, `.payments`, `.leaderboards`, `.storage`, …) for the Yandex Games, VK Games and
+> OK Games web platforms. It detects the platform at runtime, ships a mock bridge so the game runs
+> in the editor, and generates ready-to-upload web export presets from one dialog.
+
+Licensed under the [MIT License](LICENSE).
+
 ---
 
 ## Содержание
