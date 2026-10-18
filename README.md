@@ -37,11 +37,10 @@
 
 ```gdscript
 func _ready() -> void:
-	await UniSDK.initialized
-	UniSDK.ads.show_rewarded(func(result: Dictionary) -> void:
-		if result.get("success", false):
-			grant_coins()
-	)
+	await UniSDK.ensure_initialized()
+	var result: Dictionary = await UniSDK.ads.show_rewarded()
+	if result.get("rewarded", false):
+		grant_coins()
 ```
 
 ## Требования

@@ -1,7 +1,7 @@
 # UniSDK — полная документация
 
 > Справочник по модулям, настройкам проекта, различиям платформ и внутреннему устройству JS-мостов.
-> Краткий обзор и установка — в [README.md](README.md).
+> Актуально для версии **1.3.0**. Краткий обзор и установка — в [README.md](README.md).
 
 ---
 
@@ -31,7 +31,8 @@
 22. [Миграция с Yandex-only SDK](#22-миграция-с-yandex-only-sdk)
 23. [Известные ограничения](#23-известные-ограничения)
 24. [Troubleshooting](#24-troubleshooting)
-25. [Changelog](#25-changelog)
+25. [Быстрая шпаргалка](#25-быстрая-шпаргалка)
+26. [Changelog](#26-changelog)
 
 ---
 
@@ -163,7 +164,7 @@ addons/uni_sdk/
 
 ## 5. Установка
 
-1. Скопируй папку `addons/uni_sdk` в свой проект.
+1. Поставь аддон из [Godot Asset Store](https://store.godotengine.org/asset/sergeleon/unisdk/) либо скопируй папку `addons/uni_sdk` в свой проект.
 2. **Project → Project Settings → Plugins** → включи **UniSDK**.
 3. Autoload `UniSDK` зарегистрируется автоматически.
 4. При первом запуске плагин создаст дефолтные профили платформ (Yandex + VK).
@@ -213,6 +214,8 @@ addons/uni_sdk/
 | **Hosting config** | Создавать ли конфиг хостинга |
 | **Hosting config name** | Имя файла конфига |
 | **Hosting config content (JSON)** | Содержимое |
+
+Внизу диалога — две кнопки: **Validate JSON** (проверить синтаксис hosting config) и **Reset to Defaults** (вернуть профили к заводским значениям).
 
 ### Формат hosting config для VK
 
@@ -370,6 +373,8 @@ match UniSDK.get_platform():
 1. `_adapter.init()` — JS init или mock.
 2. Извлекаются `environment` и `device`.
 3. Если `auto_apply_locale` — устанавливается локаль.
+
+> В mock-режиме шаги 2–3 пропускаются: платформенных данных нет, локаль не переопределяется.
 4. `await player._ensure_initialized()` — профиль игрока готов.
 5. `is_initialized = true`.
 6. Если `auto_call_game_ready` — `game_ready()`.
@@ -468,7 +473,7 @@ review_button.visible = UniSDK.feedback.is_review_supported() \
     and (await UniSDK.feedback.can_review()).get("value", false)
 ```
 
-> ⚠️ Все capability-методы безопасны для вызова до инициализации SDK — они возвращают `true` оптимистично, чтобы UI не мигал. После `UniSDK.ensure_initialized()` результат становится точным.
+> ⚠️ Capability-методы безопасно вызывать до инициализации: пока формат в состоянии `unknown`, `is_*_supported()` возвращает `true` оптимистично, чтобы UI не мигал. После `UniSDK.ensure_initialized()` результат становится точным.
 
 ---
 
@@ -544,7 +549,7 @@ var updated = await UniSDK.player.increment_stats({ "kills": 10 })
 var read: Dictionary = await UniSDK.player.get_data_ex(["coins", "level"])
 # { ok, data, from_cache }: ok = false — облако недоступно (это не «сохранения нет»)
 var write: Dictionary = await UniSDK.player.set_data_ex({ "coins": 550 }, true)
-# { ok, success, cloud_ok }: cloud_ok = false — запись осталась в локальном бэкапе
+# { ok, success, cloud_ok, failed, deferred }: cloud_ok = false — запись осталась в локальном бэкапе
 UniSDK.player.set_data_now({ "coins": 550 })   # синхронно, при сворачивании приложения
 ```
 
@@ -552,6 +557,7 @@ UniSDK.player.set_data_now({ "coins": 550 })   # синхронно, при св
 
 - **Yandex**: `player.setData()` / `player.getData()` + localStorage-кэш с diff.
 - **VK / OK**: `VKWebAppStorageSet/Get` + localStorage-зеркало + diff. Облако читается первым и с повторами; локальный кэш отдаётся только как фолбэк и со статусом `cloud_ok: false`.
+- **Параметр `flush`**: на Яндекс.Играх уходит в `player.setData(changed, true)` — запись выполняется сразу. В VK-мост не передаётся: там запись и так уходит после diff.
 
 **Троттлинг `get_data()`**: если полный набор читали меньше 15 секунд назад, вернётся кэш.
 
@@ -680,10 +686,10 @@ var data = await UniSDK.player.get_data(SAVE_KEYS)
 
 Если передать `null`, на Яндекс.Играх данные подтянутся (YaGames API это умеет), но **на VK Storage вы получите пустой объект**, и игра прочитает локальный кэш с текущего устройства.
 
-### Пример из `save_state.gd`
+### Пример из игры автора (`save_state.gd`)
 
 ```gdscript
-const SAVE_KEYS: = [
+const SAVE_KEYS := [
     "total_game_time", "beat_game", "total_bricks_destroyed",
     "bosses_cleared", "money", "diamonds", "upgrade_levels",
     # ... остальные ключи
@@ -1007,68 +1013,7 @@ YandexGames.        →  UniSDK.
 
 ---
 
-## 25. Changelog
-
-### v1.3.0
-
-**Сохранения (п. 2.3.8 правил VK Mini Apps):**
-- `storageGet` читает облако первым и повторяет запрос; локальный кэш — только фолбэк со статусом `cloud_ok: false` (убрана гонка 800 мс, из-за которой старый кэш затирал свежий облачный прогресс).
-- `storageSet` отвечает после реальной отправки: `{ success, cloud_ok, changed, failed, deferred }`.
-- Вместо отключения облака насовсем при сбоях — пауза 60 с и повтор.
-- Новые методы `player.get_data_ex()` / `set_data_ex()` / `set_data_now()` и аналоги в адаптерах; `set_data()` сохранил прежний контракт.
-- Шаблоны VK и Яндекс шлют pause/resume по `visibilitychange` / `pagehide` / `freeze` — игра успевает сохраниться при сворачивании.
-
-**Реклама:**
-- Состояния форматов (`supported` / `unknown` / `disabled`), сигнал `format_disabled`, гашение формата после 3 явных отказов платформы.
-- Лимиты ожидания 12 / 25 / 2.5 с, `is_ad_available()`, поле `reason` в результате показа.
-- Диагностика: `diagnose()`, `get_telemetry_report()`, `dump_telemetry()`; в VK-мосте — `checkNativeAds`, `supportsNativeAds`, `adReport`; при показе отдаются оба события (`rewarded` + `close`).
-- Убран предварительный запрет нативной рекламы на десктопе VK (откат поведения v1.2.0).
-
-### v1.2.0
-
-**Добавлено:**
-- Platform capability методы во все модули: `can_show_rewarded`, `can_show_banner`, `can_purchase`, `can_get_catalog`, `can_set_score`, `can_get_entries`, `is_full_leaderboard_available`, `is_review_supported`, `is_shortcut_supported`, `can_open_auth_dialog`.
-- Алиасы `is_*_supported()` для явного именования.
-- Патч Emscripten browser checks в `index.js` при экспорте (обход ложной Safari 15.2.0).
-- Cache-busting `?v=<timestamp>` для `index.js` в HTML при экспорте.
-- Автоматическая позиция баннера VK: снизу в портрете, справа в ландшафте (VK Bridge 2.15.1+).
-- Проверка платформы для interstitial / rewarded / purchase / shortcut на десктопе VK.
-- Явный список `SAVE_KEYS` в `get_data()` для синхронизации VK Storage между устройствами.
-- `delete_save()` в VK Storage через перезапись значениями по умолчанию.
-
-**Исправлено:**
-- Утечка диалога конфигурации платформ.
-- Diff-логика для строковых значений.
-- `VKWebAppShowNativeAds` больше не вызывается на десктопе.
-- `VKWebAppShowOrderBox` различает успех и ошибку.
-- Зависший `VKWebAppCheckNativeAds` больше не приводит к показу рекламы.
-- Callback `dispatch_exit` сохраняется от GC.
-- При смене пользователя VK локальный кэш очищается.
-- `_ensure_initialized` в `player.gd` не переинициализирует каждый раз.
-- Удалён дублирующий `vk_bridge.js` / `yandex_bridge.js`.
-- `platform_detected` эмитится через `call_deferred`.
-- Фalsy-баг в `storageGetItem`.
-- `VKWebAppStorageGet` с пустым массивом не вызывает VK.
-- Параллельные `VKWebAppStorageSet` сериализованы.
-- Счётчик rate limit увеличивается на каждой попытке.
-- Hard timeout интерстишела не возвращает `success: true`.
-- Таймаут HTTPRequest для аватарок.
-
-**Улучшения:**
-- Обновлён VK Bridge до 2.15.1.
-- Убран `viewport-fit=cover` из шаблонов (устранил обрезку/приближение в WebView).
-- Убраны `dvh`/`dvw` единицы (не поддерживаются старыми WebView).
-- Убран `print_rich` из продового кода.
-- Единый логгер `UniLogger`.
-- Атомарная запись JSON через `UniAtomicIO`.
-
-### v1.0.0
-
-- Первый релиз.
-
----
-
-## Быстрая шпаргалка
+## 25. Быстрая шпаргалка
 
 ```gdscript
 # Старт
@@ -1124,3 +1069,66 @@ if UniSDK.feedback.is_review_supported():
 11. **Никогда** не полагайся на порядок событий рекламы.
 12. **Никогда** не крути `Camera2D` для ландшафта — крути корневой `Node2D` мира.
 13. **Не скрывай** кнопку rewarded заранее на десктопе VK: `can_show_rewarded()` вернёт `false` только в OK и после явных отказов платформы.
+
+---
+
+## 26. Changelog
+
+### v1.3.0
+
+**Сохранения (п. 2.3.8 правил VK Mini Apps):**
+- `storageGet` читает облако первым и повторяет запрос; локальный кэш — только фолбэк со статусом `cloud_ok: false` (убрана гонка 800 мс, из-за которой старый кэш затирал свежий облачный прогресс).
+- `storageSet` отвечает после реальной отправки: `{ success, cloud_ok, changed, failed, deferred }`.
+- Вместо отключения облака насовсем при сбоях — пауза 60 с и повтор.
+- Новые методы `player.get_data_ex()` / `set_data_ex()` / `set_data_now()` и аналоги в адаптерах; `set_data()` сохранил прежний контракт.
+- Шаблоны VK и Яндекс шлют pause/resume по `visibilitychange` / `pagehide` / `freeze` — игра успевает сохраниться при сворачивании.
+
+**Реклама:**
+- Состояния форматов (`supported` / `unknown` / `disabled`), сигнал `format_disabled`, гашение формата после 3 явных отказов платформы.
+- Лимиты ожидания 55 / 30 / 2.5 с (rewarded / interstitial / проверка «есть ли реклама»), `is_ad_available()`, поле `reason` в результате показа; лимиты настраиваются в настройках проекта.
+- Диагностика: `diagnose()`, `get_telemetry_report()`, `dump_telemetry()`; в VK-мосте — `checkNativeAds`, `supportsNativeAds`, `adReport`; при показе отдаются оба события (`rewarded` + `close`).
+- Убран предварительный запрет нативной рекламы на десктопе VK (откат поведения v1.2.0).
+
+### v1.2.0
+
+**Добавлено:**
+- Platform capability методы во все модули: `can_show_rewarded`, `can_show_banner`, `can_purchase`, `can_get_catalog`, `can_set_score`, `can_get_entries`, `is_full_leaderboard_available`, `is_review_supported`, `is_shortcut_supported`, `can_open_auth_dialog`.
+- Алиасы `is_*_supported()` для явного именования.
+- Патч Emscripten browser checks в `index.js` при экспорте (обход ложной Safari 15.2.0).
+- Cache-busting `?v=<timestamp>` для `index.js` в HTML при экспорте.
+- Автоматическая позиция баннера VK: снизу в портрете, справа в ландшафте (VK Bridge 2.15.1+).
+- Проверка платформы для interstitial / rewarded / purchase / shortcut на десктопе VK.
+- Явный список `SAVE_KEYS` в `get_data()` для синхронизации VK Storage между устройствами.
+- `delete_save()` в VK Storage через перезапись значениями по умолчанию.
+
+**Исправлено:**
+- Утечка диалога конфигурации платформ.
+- Diff-логика для строковых значений.
+- `VKWebAppShowNativeAds` больше не вызывается на десктопе.
+- `VKWebAppShowOrderBox` различает успех и ошибку.
+- Зависший `VKWebAppCheckNativeAds` больше не приводит к показу рекламы.
+- Callback `dispatch_exit` сохраняется от GC.
+- При смене пользователя VK локальный кэш очищается.
+- `_ensure_initialized` в `player.gd` не переинициализирует каждый раз.
+- Удалён дублирующий `vk_bridge.js` / `yandex_bridge.js`.
+- `platform_detected` эмитится через `call_deferred`.
+- Falsy-баг в `storageGetItem`.
+- `VKWebAppStorageGet` с пустым массивом не вызывает VK.
+- Параллельные `VKWebAppStorageSet` сериализованы.
+- Счётчик rate limit увеличивается на каждой попытке.
+- Hard timeout интерстишела не возвращает `success: true`.
+- Таймаут HTTPRequest для аватарок.
+
+**Улучшения:**
+- Обновлён VK Bridge до 2.15.1.
+- Убран `viewport-fit=cover` из шаблонов (устранил обрезку/приближение в WebView).
+- Убраны `dvh`/`dvw` единицы (не поддерживаются старыми WebView).
+- Убран `print_rich` из продового кода.
+- Единый логгер `UniLogger`.
+- Атомарная запись JSON через `UniAtomicIO`.
+
+### v1.0.0
+
+- Первый релиз.
+
+---

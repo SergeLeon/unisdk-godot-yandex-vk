@@ -107,11 +107,10 @@
 
   <h3>Minimal usage</h3>
 <pre><code>func _ready() -&gt; void:
-    await UniSDK.initialized
-    UniSDK.ads.show_rewarded(func(result: Dictionary) -&gt; void:
-        if result.get("success", false):
-            grant_coins()
-    )</code></pre>
+    await UniSDK.ensure_initialized()
+    var result: Dictionary = await UniSDK.ads.show_rewarded()
+    if result.get("rewarded", false):
+        grant_coins()</code></pre>
 
   <h2>Requirements and limits</h2>
   <ul>
