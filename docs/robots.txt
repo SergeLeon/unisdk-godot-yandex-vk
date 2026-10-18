@@ -1,0 +1,4 @@
+﻿User-agent: *
+Allow: /
+
+Sitemap: https://sergeleon.github.io/unisdk-godot-yandex-vk/sitemap.xml
