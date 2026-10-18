@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UniSDK — SDK для Яндекс.Игр и ВК Игр на Godot 4 · Yandex Games &amp; VK Games SDK for Godot</title>
+<meta name="description" content="UniSDK — бесплатный SDK для яндекса и ВК игр в Godot 4: реклама (rewarded, interstitial, banner), покупки, лидерборды, облачные сохранения, отзывы. Yandex Games &amp; VK Games SDK for Godot 4, one GDScript API, HTML5 web export presets. Установка из Godot Asset Store.">
+<meta name="keywords" content="sdk для яндекса, sdk для вк, яндекс игры godot, вк игры sdk, yandex games sdk godot, vk games sdk godot, vk bridge godot, godot 4 плагин, yandex player data, yagames, godot web export">
+<link rel="canonical" href="https://sergeleon.github.io/unisdk-godot-yandex-vk/">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="UniSDK">
+<meta property="og:title" content="UniSDK — Yandex Games &amp; VK Games SDK for Godot 4">
+<meta property="og:description" content="One GDScript API for Yandex Games, VK Games and OK Games: ads, purchases, leaderboards, cloud saves, reviews. Free, MIT, Godot 4.3+.">
+<meta property="og:url" content="https://sergeleon.github.io/unisdk-godot-yandex-vk/">
+<meta property="og:image" content="https://sergeleon.github.io/unisdk-godot-yandex-vk/assets/thumbnail.webp">
+<meta property="og:image:width" content="1920">
+<meta property="og:image:height" content="1080">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "UniSDK",
+  "alternateName": ["SDK для Яндекс.Игр", "Yandex Games SDK for Godot", "VK Games SDK for Godot", "VK Bridge for Godot"],
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "Game development plugin",
+  "operatingSystem": "Windows, macOS, Linux",
+  "softwareRequirements": "Godot 4.3 or newer",
+  "programmingLanguage": "GDScript",
+  "url": "https://sergeleon.github.io/unisdk-godot-yandex-vk/",
+  "codeRepository": "https://github.com/SergeLeon/unisdk-godot-yandex-vk",
+  "downloadUrl": "https://store.godotengine.org/asset/sergeleon/unisdk/",
+  "installUrl": "https://store.godotengine.org/asset/sergeleon/unisdk/",
+  "license": "https://opensource.org/licenses/MIT",
+  "isAccessibleForFree": true,
+  "author": { "@type": "Person", "name": "SergeLeon", "url": "https://github.com/SergeLeon" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "UniSDK is a Godot 4 editor plugin that gives a single GDScript API for the Yandex Games, VK Games and OK Games web platforms: rewarded and interstitial ads, in-app purchases, leaderboards, cloud saves with offline cache, review prompts and add-to-favourites shortcut, plus ready-to-upload HTML5 export presets."
+}
+</script>
+<style>
+  :root { --bg:#1b1b28; --bg2:#232331; --card:#2a2a3d; --fg:#eef0f6; --muted:#a8afc2; --accent:#5aa87a; --link:#7fb2ea; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.65 -apple-system,'Segoe UI',Roboto,system-ui,sans-serif; }
+  header { padding:72px 24px 40px; background:radial-gradient(circle at 78% -10%, rgba(71,140,217,.45), transparent 60%), radial-gradient(circle at 0% 120%, rgba(255,138,76,.22), transparent 55%), var(--bg2); }
+  .wrap { max-width:980px; margin:0 auto; }
+  h1 { font-size:clamp(34px,5vw,58px); line-height:1.1; margin:0 0 18px; letter-spacing:-1px; }
+  h1 .brand em { color:var(--accent); font-style:normal; }
+  .lead { font-size:clamp(17px,2vw,21px); color:var(--muted); margin:0 0 26px; max-width:46em; }
+  h2 { font-size:clamp(22px,2.6vw,30px); margin:44px 0 14px; }
+  h3 { font-size:18px; margin:24px 0 8px; }
+  a { color:var(--link); }
+  main { padding:8px 24px 64px; }
+  ul { padding-left:22px; } li { margin:7px 0; }
+  .cta { display:flex; flex-wrap:wrap; gap:12px; margin:6px 0 4px; }
+  .btn { display:inline-block; padding:12px 20px; border-radius:10px; text-decoration:none; font-weight:600; background:var(--accent); color:#08130c; }
+  .btn.ghost { background:transparent; border:1px solid #4a4a5f; color:var(--fg); }
+  .grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); margin:18px 0; }
+  .card { background:var(--card); border:1px solid #34344a; border-radius:12px; padding:16px 18px; }
+  .card h3 { margin-top:0; }
+  pre { background:#14141f; border:1px solid #34344a; border-radius:12px; padding:16px; overflow:auto; font-size:14px; }
+  code { font-family:ui-monospace,Consolas,'Cascadia Mono',monospace; }
+  .muted { color:var(--muted); }
+  .langs { display:flex; gap:8px; font-size:14px; margin-bottom:26px; }
+  .langs a { text-decoration:none; color:var(--muted); }
+  footer { padding:28px 24px 48px; border-top:1px solid #2e2e42; color:var(--muted); font-size:14px; }
+  hr { border:0; border-top:1px solid #2e2e42; margin:44px 0; }
+  .pill { display:inline-block; font-size:13px; padding:3px 10px; border-radius:999px; background:#33334a; color:#d6dbe8; margin:0 6px 6px 0; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="langs"><a href="#en">English</a> · <a href="#ru">Русский</a></div>
+    <h1><span class="brand">Uni<em>SDK</em></span> — Yandex Games &amp; VK Games SDK for Godot 4<br><span class="muted" style="font-size:.62em">SDK для Яндекс.Игр и ВК Игр на Godot 4</span></h1>
+    <p class="lead">One GDScript API for the Russian web game platforms — <strong>Yandex Games</strong>, <strong>VK Games</strong> and <strong>OK Games</strong>: rewarded and interstitial ads, in-app purchases, leaderboards, cloud saves, review prompts, and ready-to-upload HTML5 export presets. Free and open source, MIT.</p>
+    <div class="cta">
+      <a class="btn" href="https://store.godotengine.org/asset/sergeleon/unisdk/">Install from Godot Asset Store</a>
+      <a class="btn ghost" href="https://github.com/SergeLeon/unisdk-godot-yandex-vk">Source code on GitHub</a>
+    </div>
+    <p class="muted" style="margin-top:18px">Godot 4.3+ · GDScript 2.0 · HTML5 / Web export · Editor mock mode · MIT license</p>
+  </div>
+</header>
+
+<main class="wrap" id="en">
+  <h2>What UniSDK does</h2>
+  <p>UniSDK is a Godot 4 editor plugin that hides the differences between the Yandex Games SDK (YaGames) and the VK Bridge. You export <em>one</em> HTML5 build, the platform adapter is detected at runtime from the JavaScript environment, and your game code talks to a single facade — <code>UniSDK.ads</code>, <code>UniSDK.payments</code>, <code>UniSDK.leaderboards</code>, <code>UniSDK.storage</code>.</p>
+
+  <div class="grid">
+    <div class="card"><h3>Ads</h3><p>Rewarded video, interstitial with cooldown, banners and native ads. Per-format state (<code>supported</code> / <code>unknown</code> / <code>disabled</code>), waiting limits, and a <code>reason</code> in every result.</p></div>
+    <div class="card"><h3>Purchases</h3><p>Catalog, purchase flow and unconsumed-payment recovery on top of the Yandex and VK payment APIs.</p></div>
+    <div class="card"><h3>Leaderboards</h3><p>Set scores and read entries; capability checks tell you up front whether the platform allows a full board.</p></div>
+    <div class="card"><h3>Cloud saves</h3><p>Yandex Player Data and VK Storage with a local cache, diff-based writes, retries and pause/resume on page visibility changes.</p></div>
+    <div class="card"><h3>Editor mock mode</h3><p>A mock bridge answers every call inside the editor and stores data in <code>user://unisdk_mock_data.json</code>, so the game runs without a platform account.</p></div>
+    <div class="card"><h3>Export tooling</h3><p>Generates web export presets, injects the required HTML shells (Yandex SDK / VK Bridge), patches the Emscripten browser check, adds cache-busting, zips the build.</p></div>
+  </div>
+
+  <h2>Installation</h2>
+  <ol>
+    <li>Install <strong>UniSDK</strong> from the <a href="https://store.godotengine.org/asset/sergeleon/unisdk/">Godot Asset Store</a> (or copy <code>addons/uni_sdk</code> into your project).</li>
+    <li>Open <em>Project → Project Settings → Plugins</em> and enable <strong>UniSDK</strong>.</li>
+    <li>The <code>UniSDK</code> autoload registers itself; default platform profiles are created on first run.</li>
+  </ol>
+
+  <h3>Minimal usage</h3>
+<pre><code>func _ready() -&gt; void:
+    await UniSDK.initialized
+    UniSDK.ads.show_rewarded(func(result: Dictionary) -&gt; void:
+        if result.get("success", false):
+            grant_coins()
+    )</code></pre>
+
+  <h2>Requirements and limits</h2>
+  <ul>
+    <li>Godot <strong>4.3 or newer</strong>; the addon targets the Web (HTML5) export.</li>
+    <li>Desktop and mobile builds fall back to the mock bridge — that is what makes editor testing possible.</li>
+    <li>Production ads, purchases and cloud saves need a published game and credentials from Yandex Games / VK Games. OK Games support goes through the same VK Bridge and is partial.</li>
+  </ul>
+
+  <hr>
+
+  <section id="ru" lang="ru">
+    <h2>SDK для Яндекс.Игр и ВК Игр на Godot 4</h2>
+    <p>UniSDK — плагин для Godot 4, который даёт единый GDScript API для <strong>Яндекс.Игр</strong>, <strong>ВК Игр</strong> и <strong>Одноклассников</strong>. Собираешь одну HTML5-сборку — адаптер платформы выбирается сам при запуске, а игровой код обращается к одному фасаду <code>UniSDK</code>.</p>
+    <h3>Что внутри</h3>
+    <ul>
+      <li><strong>Реклама:</strong> rewarded, interstitial с кулдауном, баннеры; состояние форматов, лимиты ожидания, причина отказа в результате показа.</li>
+      <li><strong>Покупки:</strong> каталог, покупка, восстановление неиспользованных платежей.</li>
+      <li><strong>Лидерборды:</strong> отправка очков и чтение таблицы, проверки доступности полной таблицы.</li>
+      <li><strong>Облачные сохранения:</strong> Yandex Player Data и VK Storage с локальным кэшем, diff-записями, повторами и сохранением при сворачивании вкладки.</li>
+      <li><strong>Отзывы и «в избранное»:</strong> запрос оценки и ярлык на добавление игры в закладки.</li>
+      <li><strong>Mock-режим в редакторе:</strong> игра, сохранения и «показ рекламы» работают без аккаунта платформы.</li>
+      <li><strong>Экспорт:</strong> диалог создаёт Web-пресеты, подставляет HTML-оболочки Яндекса и VK, правит проверку браузера в Emscripten, добавляет cache-busting и пакует ZIP.</li>
+    </ul>
+    <h3>Установка</h3>
+    <p>Поставь плагин из <a href="https://store.godotengine.org/asset/sergeleon/unisdk/">Godot Asset Store</a> либо скопируй папку <code>addons/uni_sdk</code> в проект, затем включи <em>UniSDK</em> в <em>Project → Project Settings → Plugins</em>.</p>
+  </section>
+
+  <hr>
+
+  <h2>Links</h2>
+  <ul>
+    <li><a href="https://github.com/SergeLeon/unisdk-godot-yandex-vk">Source code, issues and the full Russian documentation (README)</a></li>
+    <li><a href="https://store.godotengine.org/asset/sergeleon/unisdk/">Godot Asset Store page</a></li>
+    <li><a href="https://github.com/SergeLeon/unisdk-godot-yandex-vk/releases">Releases and download archives</a></li>
+    <li><a href="https://github.com/SergeLeon/unisdk-godot-yandex-vk/blob/master/LICENSE">MIT License</a></li>
+  </ul>
+
+  <p>
+    <span class="pill">sdk для яндекса</span><span class="pill">sdk для вк</span><span class="pill">яндекс игры godot</span>
+    <span class="pill">вк игры sdk</span><span class="pill">yandex games sdk</span><span class="pill">vk bridge godot</span>
+    <span class="pill">yagames</span><span class="pill">yandex player data</span><span class="pill">godot web export</span>
+    <span class="pill">одноклассники sdk</span><span class="pill">godot 4 плагин</span>
+  </p>
+</main>
+
+<footer>
+  <div class="wrap">
+    UniSDK · MIT License · author <a href="https://github.com/SergeLeon">SergeLeon</a> · free addon for <a href="https://godotengine.org">Godot Engine</a> 4.3+
+  </div>
+</footer>
+</body>
+</html>
