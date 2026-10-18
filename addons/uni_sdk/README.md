@@ -1,9 +1,36 @@
-# UniSDK — Универсальный SDK для Яндекс.Игр и VK Игр в Godot 4
+# UniSDK — SDK для Яндекс.Игр и VK Игр в Godot 4 · Yandex Games & VK Games SDK for Godot
 
 <p align="center">
+  <a href="https://store.godotengine.org/asset/sergeleon/unisdk/"><img alt="Godot Asset Store" src="https://img.shields.io/badge/Godot%20Asset%20Store-UniSDK-478cbf"></a>
+  <a href="https://godotengine.org"><img alt="Godot 4.3+" src="https://img.shields.io/badge/Godot-4.3%2B-478cbf"></a>
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-green"></a>
+  <br>
   <b>Единый API для Яндекс.Игр, VK Игр и Одноклассников с модульной системой платформ</b><br>
   Godot 4.3+ · GDScript 2.0 · Web-экспорт · Editor Mock Mode
 </p>
+
+> **English summary.** UniSDK is a Godot 4.3+ editor plugin that provides a single GDScript API
+> (`UniSDK.ads`, `.payments`, `.leaderboards`, `.storage`, …) for the Yandex Games, VK Games and
+> OK Games web platforms. It detects the platform at runtime, ships a mock bridge so the game runs
+> in the editor, and generates ready-to-upload web export presets from one dialog.
+
+**SDK для Яндекс.Игр на Godot 4 · Yandex Games SDK for Godot · VK Games SDK · VK Bridge для Godot · ВК Игры SDK.**
+Установка в один клик из [Godot Asset Store](https://store.godotengine.org/asset/sergeleon/unisdk/) или копированием `addons/uni_sdk`.
+
+<details>
+<summary><b>По каким запросам находится этот репозиторий / Search terms</b></summary>
+
+`sdk для яндекса godot` · `яндекс игры sdk godot 4` · `яндекс игры плагин godot` · `yandex games sdk godot 4` ·
+`yandex games godot plugin` · `yagames sdk gdscript` · `yandex player data godot` · `яндекс реклама rewarded godot` ·
+`sdk для вк игр godot` · `вк игры sdk` · `vkontakte games sdk godot` · `vk bridge godot 4` · `vk bridge gdscript` ·
+`vk storage godot` · `vk web app godot` · `одноклассники sdk godot` · `ok.ru games godot` ·
+`godot web export html5` · `godot web export preset` · `godot rewarded video` · `godot interstitial ad` ·
+`godot cloud saves` · `godot leaderboard` · `godot in-app purchases web` · `godot html5 mobile game` ·
+`универсальный sdk для игровых платформ godot` · `unified sdk godot web platforms`
+
+</details>
+
+Licensed under the [MIT License](LICENSE).
 
 ---
 
