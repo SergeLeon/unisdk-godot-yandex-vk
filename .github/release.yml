@@ -1,0 +1,31 @@
+# Категории для кнопки "Generate release notes" в GitHub.
+# Учитываются метки pull request'ов, поэтому при пуше напрямую в master
+# заметок будет мало — конвенции коммитов достаточно для ручных релизов.
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      - dependabot
+  categories:
+    - title: Features
+      labels:
+        - feat
+        - feature
+        - enhancement
+    - title: Bug Fixes
+      labels:
+        - fix
+        - bug
+    - title: Documentation
+      labels:
+        - docs
+        - documentation
+    - title: Build and packaging
+      labels:
+        - build
+        - ci
+        - dependencies
+    - title: Other Changes
+      labels:
+        - "*"
