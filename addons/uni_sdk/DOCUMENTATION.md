@@ -1080,72 +1080,78 @@ if UniSDK.feedback.is_review_supported():
 
 ## 26. Changelog
 
-### v1.3.1
+Формат — [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/), версии — [SemVer](https://semver.org/lang/ru/).
+Даты проставлены только у версий с тегами (1.3.x): теги 1.0.0 и 1.2.0 в репозитории не сохранились.
 
-**Исправлено:**
-- `is_ad_available("rewarded")` на VK проверял interstitial: адаптер не переводил имя формата в `reward`, который понимает JS-мост.
-- Настройки `uni_sdk/ads/interstitial_timeout`, `rewarded_timeout`, `check_timeout`, `telemetry_events`, `telemetry_path` теперь видны в **Project Settings → UniSDK** (раньше читались только как скрытые дефолты).
-- Возвращён cache-busting `index.js?v=<timestamp>` при экспорте (потерян при переработке export-плагина в v1.3.0) — правки сборки больше не залипают в кэше WebView.
+### [Unreleased]
 
-**Документация:**
-- Справочник сверен с кодом: имена функций патча, лог-строки, матрица платформ (покупки и ярлыки в мобильном OK, позиции баннера), `viewport-fit` в шаблонах, асинхронный `device.get_orientation()`.
-- Полный справочник переехал в `addons/uni_sdk/DOCUMENTATION.md`, README сокращён до обзора и установки.
+### [1.3.1] - 2026-10-18
 
-### v1.3.0
+#### Fixed
+- VK: `ads.is_ad_available("rewarded")` проверял interstitial — адаптер не переводил имя формата в `reward`, который понимает JS-мост.
+- Экспорт: возвращён cache-busting `index.js?v=<timestamp>` (потерян в 1.3.0 при переработке export-плагина), из-за чего WebView отдавал старую сборку и патч Emscripten не применялся.
+- Экспорт: cache-busting больше не считает ошибкой совпавший timestamp — `index.html` пишется после успешной замены, повторный экспорт в пределах секунды возвращает успех.
 
-**Сохранения (п. 2.3.8 правил VK Mini Apps):**
-- `storageGet` читает облако первым и повторяет запрос; локальный кэш — только фолбэк со статусом `cloud_ok: false` (убрана гонка 800 мс, из-за которой старый кэш затирал свежий облачный прогресс).
+#### Changed
+- `uni_sdk/ads/interstitial_timeout`, `rewarded_timeout`, `check_timeout`, `telemetry_events` и `telemetry_path` зарегистрированы в **Project Settings → UniSDK** — раньше работали как скрытые дефолты.
+- Справочник вынесен в `addons/uni_sdk/DOCUMENTATION.md` и выверен по коду; README сокращён до обзора и установки.
+- Значок перерисован под правила каталога: только имя и крупный слоган.
+
+### [1.3.0] - 2026-10-18
+
+#### Added
+- Синхронизация сохранений через облако платформы: `player.get_data_ex()` / `set_data_ex()` / `set_data_now()` и те же методы в адаптерах; `set_data()` сохранил прежний контракт.
 - `storageSet` отвечает после реальной отправки: `{ success, cloud_ok, changed, failed, deferred }`.
-- Вместо отключения облака насовсем при сбоях — пауза 60 с и повтор.
-- Новые методы `player.get_data_ex()` / `set_data_ex()` / `set_data_now()` и аналоги в адаптерах; `set_data()` сохранил прежний контракт.
 - Шаблоны VK и Яндекс шлют pause/resume по `visibilitychange` / `pagehide` / `freeze` — игра успевает сохраниться при сворачивании.
+- Состояния форматов рекламы (`supported` / `unknown` / `disabled`), сигнал `format_disabled`, гашение формата после 3 явных отказов платформы.
+- `ads.is_ad_available()` и поле `reason` в результате показа (`shown` / `not_filled` / `unsupported` / `timeout` / `error`).
+- Диагностика рекламы: `ads.diagnose()`, `get_telemetry_report()`, `dump_telemetry()`; в VK-мосте — `checkNativeAds`, `supportsNativeAds`, `adReport`.
+- `.uid`-файлы скриптов и `.gitattributes` (LF).
 
-**Реклама:**
-- Состояния форматов (`supported` / `unknown` / `disabled`), сигнал `format_disabled`, гашение формата после 3 явных отказов платформы.
-- Лимиты ожидания 55 / 30 / 2.5 с (rewarded / interstitial / проверка «есть ли реклама»), `is_ad_available()`, поле `reason` в результате показа; лимиты настраиваются в настройках проекта.
-- Диагностика: `diagnose()`, `get_telemetry_report()`, `dump_telemetry()`; в VK-мосте — `checkNativeAds`, `supportsNativeAds`, `adReport`; при показе отдаются оба события (`rewarded` + `close`).
-- Убран предварительный запрет нативной рекламы на десктопе VK (откат поведения v1.2.0).
+#### Fixed
+- `storageGet` читает облако первым и повторяет запрос; локальный кэш — только фолбэк со статусом `cloud_ok: false` (убрана гонка 800 мс, из-за которой старый кэш затирал свежий облачный прогресс).
+- Реклама: награда за rewarded не теряется на длинном ролике; лимиты ожидания упорядочены — 55 / 30 / 2.5 с снаружи против 45 / 20 с в JS-мосте.
+- VK: мобильное приложение больше не определяется как десктоп — device и environment считаются по launch params.
 
-### v1.2.0
+#### Changed
+- Вместо отключения облака насовсем при сбоях — пауза 60 с и повтор.
+- Убран предварительный запрет нативной рекламы на десктопе VK (откат поведения 1.2.0).
+- При показе рекламы отдаются оба события: `rewarded` + `close`.
 
-**Добавлено:**
-- Platform capability методы во все модули: `can_show_rewarded`, `can_show_banner`, `can_purchase`, `can_get_catalog`, `can_set_score`, `can_get_entries`, `is_full_leaderboard_available`, `is_review_supported`, `is_shortcut_supported`, `can_open_auth_dialog`.
-- Алиасы `is_*_supported()` для явного именования.
-- Патч Emscripten browser checks в `index.js` при экспорте (обход ложной Safari 15.2.0).
-- Cache-busting `?v=<timestamp>` для `index.js` в HTML при экспорте.
+### [1.2.0]
+
+#### Added
+- Platform capability методы во всех модулях: `can_show_rewarded`, `can_show_banner`, `can_purchase`, `can_get_catalog`, `can_set_score`, `can_get_entries`, `is_full_leaderboard_available`, `is_review_supported`, `is_shortcut_supported`, `can_open_auth_dialog`; алиасы `is_*_supported()`.
+- Патч Emscripten browser checks в `index.js` при экспорте (обход ложной Safari 15.2.0) и cache-busting `?v=<timestamp>` для `index.js`.
 - Автоматическая позиция баннера VK: снизу в портрете, справа в ландшафте (VK Bridge 2.15.1+).
 - Проверка платформы для interstitial / rewarded / purchase / shortcut на десктопе VK.
 - Явный список `SAVE_KEYS` в `get_data()` для синхронизации VK Storage между устройствами.
 - `delete_save()` в VK Storage через перезапись значениями по умолчанию.
 
-**Исправлено:**
+#### Fixed
 - Утечка диалога конфигурации платформ.
-- Diff-логика для строковых значений.
-- `VKWebAppShowNativeAds` больше не вызывается на десктопе.
-- `VKWebAppShowOrderBox` различает успех и ошибку.
+- Diff-логика для строковых значений; falsy-баг в `storageGetItem`.
+- `VKWebAppShowNativeAds` не вызывается на десктопе; `VKWebAppShowOrderBox` различает успех и ошибку.
 - Зависший `VKWebAppCheckNativeAds` больше не приводит к показу рекламы.
 - Callback `dispatch_exit` сохраняется от GC.
 - При смене пользователя VK локальный кэш очищается.
 - `_ensure_initialized` в `player.gd` не переинициализирует каждый раз.
-- Удалён дублирующий `vk_bridge.js` / `yandex_bridge.js`.
 - `platform_detected` эмитится через `call_deferred`.
-- Falsy-баг в `storageGetItem`.
-- `VKWebAppStorageGet` с пустым массивом не вызывает VK.
-- Параллельные `VKWebAppStorageSet` сериализованы.
-- Счётчик rate limit увеличивается на каждой попытке.
-- Hard timeout интерстишела не возвращает `success: true`.
-- Таймаут HTTPRequest для аватарок.
+- `VKWebAppStorageGet` с пустым массивом не вызывает VK; параллельные `VKWebAppStorageSet` сериализованы; счётчик rate limit растёт на каждой попытке.
+- Hard timeout интерстишела не возвращает `success: true`; таймаут HTTPRequest для аватарок.
 
-**Улучшения:**
+#### Changed
 - Обновлён VK Bridge до 2.15.1.
-- Убран `viewport-fit=cover` из VK-шаблона; в Яндекс-шаблоне остаётся — см. §24.
-- Убраны `dvh`/`dvw` единицы (не поддерживаются старыми WebView).
-- Убран `print_rich` из продового кода.
-- Единый логгер `UniLogger`.
-- Атомарная запись JSON через `UniAtomicIO`.
+- Убран `viewport-fit=cover` из VK-шаблона (в Яндекс-шаблоне остаётся — см. §24); убраны `dvh`/`dvw`.
+- Единый логгер `UniLogger`, атомарная запись JSON через `UniAtomicIO`, `print_rich` убран из продового кода.
+- Удалены дублирующие `vk_bridge.js` / `yandex_bridge.js`.
 
-### v1.0.0
+### [1.0.0]
 
-- Первый релиз.
+- Первый публичный релиз.
 
----
+[Unreleased]: https://github.com/SergeLeon/unisdk-godot-yandex-vk/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/SergeLeon/unisdk-godot-yandex-vk/releases/tag/v1.3.1
+[1.3.0]: https://github.com/SergeLeon/unisdk-godot-yandex-vk/releases/tag/v1.3.0
+[1.2.0]: https://github.com/SergeLeon/unisdk-godot-yandex-vk/releases
+[1.0.0]: https://github.com/SergeLeon/unisdk-godot-yandex-vk/releases
