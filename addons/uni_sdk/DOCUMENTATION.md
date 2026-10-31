@@ -33,6 +33,7 @@
 24. [Troubleshooting](#24-troubleshooting)
 25. [Быстрая шпаргалка](#25-быстрая-шпаргалка)
 26. [Changelog](#26-changelog)
+27. [Как помочь проекту](#27-как-помочь-проекту)
 
 ---
 
@@ -1149,6 +1150,16 @@ if UniSDK.feedback.is_review_supported():
 ### [1.0.0]
 
 - Первый публичный релиз.
+
+## 27. Как помочь проекту
+
+Всё по желанию, ничего не блокирует:
+
+- **⭐ Звезда в репозитории** — [github.com/SergeLeon/unisdk-godot-yandex-vk](https://github.com/SergeLeon/unisdk-godot-yandex-vk). Помогает другим разработчикам Godot находить UniSDK через поиск.
+- **🐞 Баг или идея** — [issues](https://github.com/SergeLeon/unisdk-godot-yandex-vk/issues). Приложите версию UniSDK, версию Godot, платформу и вывод консоли редактора — с этим ответ приходит быстрее.
+- **✍️ Отзыв в каталоге** — [Godot Asset Store](https://store.godotengine.org/asset/sergeleon/unisdk/). Оценка после установки влияет на то, увидят ли аддон другие.
+
+Что упрощает разбор проблем: `UniSDK.diagnose()`, строки `[UniSDK]` в консоли редактора, `user://unisdk_mock_data.json` при работе в mock-режиме, `user://unisdk_player_backup.json` для сохранений. Подробности — §23 «Известные ограничения» и §24 «Troubleshooting».
 
 [Unreleased]: https://github.com/SergeLeon/unisdk-godot-yandex-vk/compare/v1.3.1...HEAD
 [1.3.1]: https://github.com/SergeLeon/unisdk-godot-yandex-vk/releases/tag/v1.3.1

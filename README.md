@@ -5,6 +5,7 @@
   <a href="https://sergeleon.github.io/unisdk-godot-yandex-vk/"><img alt="Website" src="https://img.shields.io/badge/website-landing%20page-478cbf"></a>
   <a href="https://godotengine.org"><img alt="Godot 4.3+" src="https://img.shields.io/badge/Godot-4.3%2B-478cbf"></a>
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-green"></a>
+  <a href="https://github.com/SergeLeon/unisdk-godot-yandex-vk"><img alt="GitHub stars" src="https://img.shields.io/github/stars/SergeLeon/unisdk-godot-yandex-vk?style=social&label=Star"></a>
 </p>
 
 > **English summary.** UniSDK is a Godot 4.3+ editor plugin that provides a single GDScript API
@@ -69,6 +70,8 @@ func _ready() -> void:
 
 - **[addons/uni_sdk/DOCUMENTATION.md](addons/uni_sdk/DOCUMENTATION.md)** — полный справочник: все модули и методы, настройки проекта, различия платформ, лимиты и лимиты ожидания рекламы, внутреннее устройство JS-мостов, патч Emscripten, mock-режим, миграция с Yandex-only SDK, troubleshooting, changelog.
 - **[Лендинг](https://sergeleon.github.io/unisdk-godot-yandex-vk/)** — то же описание на одной странице.
+
+⭐ Если UniSDK сэкономил вам время — [звезда на GitHub](https://github.com/SergeLeon/unisdk-godot-yandex-vk) помогает проекту находить других разработчиков.
 
 <details>
 <summary><b>По каким запросам находится этот репозиторий / Search terms</b></summary>
